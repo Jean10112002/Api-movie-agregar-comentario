@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../db/conexion.js";
-import { TypeUsersModel } from "./TypeUsersModel.js";
+import { ComentarioModel } from "./ComentarioModel.js";
 
 export const UserModel = sequelize.define(
   "users",
@@ -32,5 +32,9 @@ export const UserModel = sequelize.define(
   }
 );
 
-TypeUsersModel.hasMany(UserModel, { foreignKey: "typeusers_id" });
+ ComentarioModel.belongsTo(UserModel, { foreignKey: "user_id" });
+UserModel.hasMany(ComentarioModel, { foreignKey: "user_id" });
+ 
+/* TypeUsersModel.hasMany(UserModel, { foreignKey: "typeusers_id" });
 UserModel.belongsTo(TypeUsersModel, { foreignKey: "typeusers_id" });
+ */

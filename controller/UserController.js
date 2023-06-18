@@ -7,19 +7,30 @@ import { TOKEN_KEY } from "../config/config.js";
 export const getUsers = async (req, res) => {
   try {
     const users = await UserModel.findAll({
-      attributes: ['id', 'user', 'email', 'typeusers_id']
+      attributes: ['id', 'user', 'email']
     },{where: {state:true}});
   
-    res.status(200).json({users});
+    return res.status(200).json({users});
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    return  res.status(500).json({ error: error.message });
+  }
+};
+export const getUser = async (req, res) => {
+  try {
+    const user = await UserModel.findAll({where: {id: req.params.id},
+      attributes: ['id', 'user', 'email']
+    },{where: {state:true}});
+  
+    return res.status(200).json({user});
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 };
 export const createUsers = async (req, res) => {
   try {
-    const { user, email, password, typeusers_id } = req.body;
-    if (!(user ||  email ||  password ||  typeusers_id)) {
-      res.status(400).json({ message: "all input is required" });
+    const { user, email, password} = req.body;
+    if (!(user ||  email ||  password)) {
+      return  res.status(400).json({ message: "all input is required" });
     }
     // check if email already exist
     // Validate if email exist in our database
@@ -34,7 +45,6 @@ export const createUsers = async (req, res) => {
       user,
       email: email.toLowerCase(), // sanitize: convert email to lowercase
       password: encryptedPassword,
-      typeusers_id,
     });
     // Create token
     const token = jwt.sign({ user_id: users.id, email }, TOKEN_KEY, {
@@ -42,29 +52,29 @@ export const createUsers = async (req, res) => {
     });
     // save user token
     // users.token = token;
-    res.status(201).json({ users, token: token });
+    return res.status(201).json({ users, token: token });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return  res.status(500).json({ error: error.message });
   }
 };
 export const updateUsers = async (req, res) => {
   const { user } = req.body;
   if (!(user)) {
-    res.status(400).json({ message: "user is required" });
+    return res.status(400).json({ message: "user is required" });
   }
   const userD= await UserModel.findOne({where:{id:req.params.id}});
   if(userD){
     userD.set({...userD,user:user});
       await userD.save();
-      res.status(200).json({ message: "update" });
+      return res.status(200).json({ message: "update" });
   }else{
-      res.status(404).json({message: "user not found"});
+    return res.status(404).json({message: "user not found"});
   }
 };
 export const updateUsersEmail = async (req, res) => {
   const { email } = req.body;
   if (!(email)) {
-    res.status(400).json({ message: "email is required" });
+    return res.status(400).json({ message: "email is required" });
   }
   const oldUser = await UserModel.findOne({ where: { email: email } });
   if (oldUser) {
@@ -74,23 +84,23 @@ export const updateUsersEmail = async (req, res) => {
   if(userD){
     userD.set({...userD,email:email});
       await userD.save();
-      res.status(200).json({ message: "update" });
+      return res.status(200).json({ message: "update" });
   }else{
-      res.status(404).json({message: "user not found"});
+    return res.status(404).json({message: "user not found"});
   }
 };
 export const updateUsersPassword = async (req, res) => {
   const { password } = req.body;
   if (!(password)) {
-    res.status(400).json({ message: "password is required" });
+    return res.status(400).json({ message: "password is required" });
   }
   const userD= await UserModel.findOne({where:{id:req.params.id}});
   if(userD){
     userD.set({...userD,password:password});
       await userD.save();
-      res.status(200).json({ message: "update" });
+      return res.status(200).json({ message: "update" });
   }else{
-      res.status(404).json({message: "user not found"});
+    return  res.status(404).json({message: "user not found"});
   }
 };
 export const deleteUsers = async (req, res) => {
@@ -98,9 +108,9 @@ export const deleteUsers = async (req, res) => {
   if (user) {
     user.set({ ...user, state: false });
     await user.save();
-    res.status(200).json({ message: "delete" });
+    return res.status(200).json({ message: "delete" });
   } else {
-    res.status(404).json({ message: "type not found" });
+    return  res.status(404).json({ message: "type not found" });
   }
 };
 export const login = async (req, res) => {
@@ -109,7 +119,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
     // Validate user input
     if (!(email && password)) {
-      res.status(400).json({message:"All input is required"});
+      return res.status(400).json({message:"All input is required"});
     }
     // Validate if user exist in our database
     const user = await UserModel.findOne({
@@ -127,11 +137,11 @@ export const login = async (req, res) => {
           email:user.email,
           typeusers_id:user.typeusers_id
       }
-      res.status(200).json({ dataUser, token: token });
+      return res.status(200).json({ dataUser, token: token });
     }
-    res.status(400).json({message:"Invalid credentials"});
+    return res.status(400).json({message:"Invalid credentials"});
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return  res.status(500).json({ error: err.message });
   }
   // Our register logic ends here
 };
